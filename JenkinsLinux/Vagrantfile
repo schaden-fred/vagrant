@@ -1,0 +1,51 @@
+$script = <<-SCRIPT
+echo "Running script"
+touch ~vagrant/scriptran.txt
+sudo service sshd stop
+sudo mv /etc/ssh/sshd_config /etc/ssh/sshd_config_original
+sudo mv /tmp/sshd_config /etc/ssh/sshd_config
+sudo service sshd start
+sudo yum install -y net-tools java wget git maven
+sudo yum update -y
+cd ~
+wget http://mirrors.jenkins.io/war-stable/latest/jenkins.war
+sudo mkdir jenkins2
+cd jenkins2
+git clone https://github.com/g0t4/jenkins2-course-spring-boot.git
+cd ~
+sudo chown vagrant:vagrant jenkins2 -R
+
+echo "Installing PhantomJS"
+echo "Manually installing libfontconfig as part of PhantomJS install"
+wget http://www.freedesktop.org/software/fontconfig/release/fontconfig-2.11.0.tar.gz
+tar -zxvf fontconfig-2.11.0.tar.gz
+cd fontconfig-2.11.0
+./configure -prefix=/usr
+make
+# move the file into /usr/lib manually (don't trust 'make install' on a production box)
+sudo mv ./src/.libs/libfontconfig.so.1.2.0 /usr/lib/
+# and setup the libfontconfig.so.1 symlink
+cd /usr/lib
+sudo ln -s libfontconfig.so.1.2.0 libfontconfig.so.1
+
+sudo yum install freetype fontconfig
+cd ~
+wget https://bitbucket.org/ariya/phantomjs/downloads/phantomjs-1.9.7-linux-i686.tar.bz2
+bunzip2 phantomjs*.tar.bz2
+tar xvf phantomjs*.tar
+sudo cp phantomjs*/bin/phantomjs /usr/bin/phantomjs
+echo "Done installing PhantomJS"
+
+
+SCRIPT
+
+Vagrant.configure("2") do |config|
+  config.vm.box = "centos/7"
+  config.vm.hostname = "jenkins.fredericscott.com"
+  config.vm.provider "virtualbox" do |vb|
+    vb.memory = 8192
+  end
+  config.vm.network "private_network", :type => 'dhcp', :adapter => 2
+  config.vm.provision "file", source: "./configfiles/sshd_config", destination: "/tmp/sshd_config"
+  config.vm.provision "shell", inline: $script
+end

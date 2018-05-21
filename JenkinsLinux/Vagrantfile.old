@@ -1,0 +1,26 @@
+$script = <<-SCRIPT
+echo "Running script"
+touch ~vagrant/scriptran.txt
+sudo service sshd stop
+sudo mv /etc/ssh/sshd_config /etc/ssh/sshd_config_original
+sudo mv /tmp/sshd_config /etc/ssh/sshd_config
+sudo service sshd start
+sudo yum install -y net-tools java wget git maven
+sudo yum update -y
+sudo mkdir ~\jenkins2
+cd ~\jenkins2
+git clone https://github.com/g0t4/jenkins2-course-spring-boot.git
+SCRIPT
+
+Vagrant.configure("2") do |config|
+  config.vm.box = "centos/7"
+  config.vm.hostname = "jenkins.fredericscott.com"
+  config.vm.provider "virtualbox" do |vb|
+    vb.memory = 8192
+  end
+  Vagrant::Config.run do |config|
+    config.vm.network :hostonly, "172.28.128.5"
+  end
+  config.vm.provision "file", source: "./configfiles/sshd_config", destination: "/tmp/sshd_config"
+  config.vm.provision "shell", inline: $script
+end
