@@ -36,6 +36,15 @@ tar xvf phantomjs*.tar
 sudo cp phantomjs*/bin/phantomjs /usr/bin/phantomjs
 echo "Done installing PhantomJS"
 
+echo "Installing Extra Packages for Enterprise Linux repository"
+sudo yum install -y epel-release
+echo "Installing NodeJS"
+sudo yum install -y nodejs
+echo "Checking installed versions"
+node --version
+npm -v
+
+
 
 SCRIPT
 
