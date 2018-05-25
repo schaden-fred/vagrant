@@ -50,7 +50,7 @@ SCRIPT
 
 Vagrant.configure("2") do |config|
   config.vm.box = "centos/7"
-  config.vm.hostname = "jenkins.fredericscott.com"
+  config.vm.hostname = "jenkinsnode1.fredericscott.com"
   config.vm.provider "virtualbox" do |vb|
     vb.memory = 8192
   end
