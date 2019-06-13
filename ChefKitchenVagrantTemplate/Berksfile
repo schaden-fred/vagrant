@@ -1,0 +1,3 @@
+metadata
+source chef_repo: ".."
+# source 'https://supermarket.chef.io'

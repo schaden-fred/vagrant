@@ -1,0 +1,37 @@
+---
+driver:
+  name: vagrant
+  # Allows additional configuration to take place in another file.  Useful for shared configuration.
+  vagrantfiles:
+    - vagrantfile.rb
+  vm_hostname: false
+  communicator: winrm 
+  customize:
+    name: <cookbook_name>
+    memory: 2048
+
+provisioner:
+  name: chef_zero
+  # You may wish to disable always updating cookbooks in CI or other testing environments.
+  # For example:
+  #   always_update_cookbooks: <%= !ENV['CI'] %>
+  always_update_cookbooks: true
+  product_version: 14
+  product_name: chef
+
+platforms:
+  - name: windows_server_2019
+    driver:
+      box: gusztavvargadr/windows-server
+
+verifier:
+  name: inspec
+
+suites:
+  - name: default
+    run_list:
+      - recipe[cookbook::recipe]
+    verifier:
+      inspec_tests:
+        - test/smoke/default
+    attributes:
