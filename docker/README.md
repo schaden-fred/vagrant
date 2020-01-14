@@ -1,0 +1,1 @@
+This Vagrant VM contains a full Docker test environment.  Since Docker and Virtualbox don't play well together, this solves the compatibility problem.
