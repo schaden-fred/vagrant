@@ -1,0 +1,1 @@
+A basic Centos 7 box with no customizations
