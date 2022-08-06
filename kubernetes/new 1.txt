@@ -1,0 +1,34 @@
+	# Shell commands at this level will only run once.
+	config.vm.provision "shell", inline: "yum update -y"
+	#disable SELinux for simplicity.  Don't do this in prod.
+	config.vm.provision "shell", inline: "setenforce 0"
+	config.vm.provision "shell", inline: "sed -i --follow-symlinks 's/SELINUX=enforcing/SELINUX=disabled/g' /etc/sysconfig/selinux"
+	#Enable the br_netfilter module for cluster communication.
+	config.vm.provision "shell", inline: "modprobe br_netfilter"
+	#Allow Kubernetes to manipulate iptables
+	config.vm.provision "shell", inline: "echo '1' > /proc/sys/net/bridge/bridge-nf-call-iptables"
+	#Disable swap to prevent memory allocation issues.
+	config.vm.provision "shell", inline: "swapoff -a"
+	config.vm.provision "shell", inline: "sed -e '/swap/ s/^#*/#/' -i /etc/fstab"
+	#Install docker prerequisites
+	config.vm.provision "shell", inline: "yum install -y yum-utils device-mapper-persistent-data lvm2"
+	#Add the Docker repo and install Docker.
+	config.vm.provision "shell", inline: "yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo"
+	config.vm.provision "shell", inline: "yum install -y docker-ce"
+	#Configure the Docker Cgroup Driver to systemd, enable and start Docker
+	config.vm.provision "shell", inline: "sed -i '/^ExecStart/ s/$/ --exec-opt native.cgroupdriver=systemd/' /usr/lib/systemd/system/docker.service"
+	config.vm.provision "shell", inline: "systemctl daemon-reload"
+	config.vm.provision "shell", inline: "systemctl enable docker --now"
+	config.vm.provision "shell", inline: "systemctl status docker"
+	config.vm.provision "shell", inline: "docker info | grep -i cgroup"
+	#add the kubernetes repo
+	config.vm.provision "file", source: "kubernetes.repo", destination: "~vagrant/kubernetes.repo"
+	config.vm.provision "shell", inline: "sudo mv ~vagrant/kubernetes.repo /etc/yum.repos.d/kubernetes.repo"
+	#Install Kubernetes
+	config.vm.provision "shell", inline: "yum install -y kubelet kubeadm kubectl"
+	#Enable Kubernetes. The kubelet service will not start until you run kubeadm init on the master node, or join the worker node to the master.
+	config.vm.provision "shell", inline: "systemctl enable kubelet"
+	#Prevent an error on preflight due to container runtime not running.
+	config.vm.provision "shell", inline: "rm /etc/containerd/config.toml"
+	config.vm.provision "shell", inline: "systemctl restart containerd"
+	
